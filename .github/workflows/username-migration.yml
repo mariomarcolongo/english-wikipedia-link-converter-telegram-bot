@@ -1,0 +1,51 @@
+name: One-time GitHub username migration
+
+on:
+  push:
+    paths:
+      - .github/workflows/username-migration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Replace stale username in tracked UTF-8 files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          names = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          for name in filter(None, names):
+              path = Path(name)
+              data = path.read_bytes()
+              if b"\0" in data:
+                  continue
+              try:
+                  text = data.decode("utf-8")
+              except UnicodeDecodeError:
+                  continue
+              updated = text.replace("jnton", "mariomarcolongo").replace("JnTon", "mariomarcolongo")
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+          PY
+      - name: Remove one-time workflow
+        run: rm .github/workflows/username-migration.yml
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Remove stale GitHub username references"
+          git push
