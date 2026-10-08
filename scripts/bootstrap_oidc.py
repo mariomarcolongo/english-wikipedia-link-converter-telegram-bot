@@ -5,7 +5,7 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
-REPOSITORY = "jnton/english-wikipedia-link-converter-telegram-bot"
+REPOSITORY = "mariomarcolongo/english-wikipedia-link-converter-telegram-bot"
 OWNER_ID = "84038748"
 REPOSITORY_ID = "782735600"
 ROLE_NAME = "GitHubActions-ToEnWikipediaBot"
@@ -60,7 +60,7 @@ def ensure_provider(iam, account_id: str) -> str:
 def trust_policy(provider_arn: str) -> dict:
     traditional = f"repo:{REPOSITORY}:ref:refs/heads/main"
     immutable = (
-        f"repo:jnton@{OWNER_ID}/english-wikipedia-link-converter-telegram-bot@"
+        f"repo:mariomarcolongo@{OWNER_ID}/english-wikipedia-link-converter-telegram-bot@"
         f"{REPOSITORY_ID}:ref:refs/heads/main"
     )
     return {

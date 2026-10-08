@@ -54,7 +54,7 @@ PROCESSING_LEASE_SECONDS = int(os.getenv("PROCESSING_LEASE_SECONDS", "60"))
 HTTP_TIMEOUT = aiohttp.ClientTimeout(total=5, connect=2)
 USER_AGENT = (
     "EnglishWikipediaLinkConverterBot/2.0 "
-    "(https://github.com/jnton/english-wikipedia-link-converter-telegram-bot)"
+    "(https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot)"
 )
 URL_PATTERN = re.compile(r"https?://[^\s<>]+", re.IGNORECASE)
 LANGUAGE_CODE_PATTERN = re.compile(r"[a-z0-9-]{1,32}")
@@ -628,7 +628,7 @@ async def source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await _reply(
         update,
         "You can find my source code here:\n"
-        "https://github.com/jnton/english-wikipedia-link-converter-telegram-bot/\n\n"
+        "https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/\n\n"
         "Feel free to contribute or fork to create your own version!",
     )
 
@@ -645,7 +645,7 @@ async def license_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         '<a href="http://creativecommons.org/licenses/by-sa/4.0/">'
         "Creative Commons Attribution-ShareAlike 4.0 International License "
         "(CC BY-SA 4.0)</a>. See the "
-        '<a href="https://github.com/jnton/english-wikipedia-link-converter-telegram-bot/tree/main/Telegram-Bot-Icon">'
+        '<a href="https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/tree/main/Telegram-Bot-Icon">'
         "icon directory</a> for more details.\n\n"
         "<b>Image Credits</b>\n\n"
         "The bot's icon incorporates images from the following sources:\n\n"
@@ -779,7 +779,7 @@ async def privacy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await _reply(
         update,
         "Privacy Policy:\n"
-        "https://jnton.github.io/english-wikipedia-link-converter-telegram-bot/PRIVACY_POLICY.html",
+        "https://mariomarcolongo.github.io/english-wikipedia-link-converter-telegram-bot/PRIVACY_POLICY.html",
         disable_web_page_preview=True,
     )
 

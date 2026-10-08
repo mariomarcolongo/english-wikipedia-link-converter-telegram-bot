@@ -129,7 +129,7 @@ Do not store or log message text, user names, bot tokens, or webhook secrets. Th
 
 The code in this repository is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.en.html), except where otherwise specified.
 
-The icon for the English Wikipedia Link Converter Telegram Bot is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)][cc-by-sa]. See the [icon directory](https://github.com/JnTon/English-Wikipedia-Link-Converter-Telegram-Bot/tree/main/Telegram-Bot-Icon) for more details.
+The icon for the English Wikipedia Link Converter Telegram Bot is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)][cc-by-sa]. See the [icon directory](https://github.com/mariomarcolongo/English-Wikipedia-Link-Converter-Telegram-Bot/tree/main/Telegram-Bot-Icon) for more details.
 
 ### Image credits
 

@@ -48,4 +48,4 @@ Under applicable laws you may:
 - Request deletion (data is auto-deleted on restart).  
 - Withdraw consent by stopping use of the Bot.
 
-_To exercise rights or for any privacy inquiries, please open an issue at [https://github.com/jnton/english-wikipedia-link-converter-telegram-bot/issues](https://github.com/jnton/english-wikipedia-link-converter-telegram-bot/issues)._
+_To exercise rights or for any privacy inquiries, please open an issue at [https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/issues](https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/issues)._
