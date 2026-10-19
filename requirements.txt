@@ -6,7 +6,7 @@
 #
 aiohappyeyeballs==2.7.1
     # via aiohttp
-aiohttp==3.14.3
+aiohttp==3.14.5
     # via -r requirements.in
 aiosignal==1.4.0
     # via aiohttp
@@ -45,5 +45,5 @@ propcache==0.5.2
     #   yarl
 python-telegram-bot==22.8
     # via -r requirements.in
-yarl==1.24.5
+yarl==1.25.1
     # via aiohttp
