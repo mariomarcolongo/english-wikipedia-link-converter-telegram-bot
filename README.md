@@ -48,7 +48,7 @@ Telegram may redeliver webhook updates, and SQS/Lambda processing is at-least-on
 - distributed limits of 10 conversion requests per user and 30 per chat per minute;
 - separate distributed limits for commands and inline requests;
 - rate-limit warnings deduplicated per chat;
-- dedicated webhook and worker Lambda concurrency limits;
+- a worker event source capped at two concurrent invocations, plus reserved Lambda capacity when the account quota permits;
 - SQS dead-letter handling and bounded retry behavior;
 - short-lived repository-scoped GitHub OIDC deployment credentials;
 - 14-day CloudWatch log retention;
@@ -58,8 +58,8 @@ Telegram may redeliver webhook updates, and SQS/Lambda processing is at-least-on
 
 The deployment intentionally uses small, serverless resources:
 
-- one 256 MB ARM64 webhook Lambda with three reserved concurrent executions;
-- one 256 MB ARM64 SQS worker Lambda with two reserved concurrent executions;
+- one 256 MB ARM64 webhook Lambda, requesting three reserved concurrent executions when quota permits;
+- one 256 MB ARM64 SQS worker Lambda limited to two concurrent invocations;
 - one 128 MB ARM64 monitor Lambda invoked every 15 minutes;
 - one standard SQS queue and one dead-letter queue;
 - one DynamoDB table provisioned at 10 read and 10 write capacity units;
@@ -68,7 +68,7 @@ The deployment intentionally uses small, serverless resources:
 - up to seven CloudWatch alarms, automatically capped so the account stays at or below ten standard alarms;
 - 14-day log retention.
 
-Separating the SQS worker preserves webhook capacity during recovery and avoids configuring SQS maximum concurrency, allowing Lambda to reduce idle queue polling. ARM64 uses AWS Graviton and is selected for efficiency. The footprint is designed to remain inside the normal free allowances for a small bot, but AWS pricing and account eligibility can vary. Set `ALERT_EMAIL` and the deployment will also create a small monthly budget alert when the account has a free budget slot.
+The SQS event source explicitly limits worker processing to two concurrent invocations. Deployment requests reserved capacity for the webhook, worker, and monitor when AWS allows it. Accounts with a total Lambda concurrency quota of 10 cannot reserve capacity because AWS requires 10 unreserved executions; deployment handles that specific limit by using the shared pool. Other Lambda workloads in the account can still compete for shared capacity. Explicit SQS maximum concurrency can increase idle polling compared with Lambda's polling optimization. ARM64 uses AWS Graviton and is selected for efficiency. The footprint is designed to remain inside the normal free allowances for a small bot, but AWS pricing and account eligibility can vary. Set `ALERT_EMAIL` and the deployment will also create a small monthly budget alert when the account has a free budget slot.
 
 ## Deployment
 

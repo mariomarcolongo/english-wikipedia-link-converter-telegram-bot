@@ -9,6 +9,24 @@ from aws_setup.common import APPLICATION, MONITOR_FUNCTION, WORKER_FUNCTION
 LAMBDA_ARCHITECTURE = "arm64"
 
 
+def set_reserved_concurrency(lambda_client, function_name: str, count: int) -> None:
+    try:
+        lambda_client.put_function_concurrency(
+            FunctionName=function_name, ReservedConcurrentExecutions=count,
+        )
+    except ClientError as error:
+        details = error.response.get("Error", {})
+        message = details.get("Message", "").lower()
+        if details.get("Code") != "InvalidParameterValueException" or not (
+            "unreservedconcurrentexecution" in message and "minimum" in message
+        ):
+            raise
+        print(
+            f"::warning::The account cannot reserve {count} executions for {function_name}; "
+            "using shared concurrency. SQS worker concurrency remains capped at two."
+        )
+
+
 def prepare_function_url(lambda_client, function_name: str) -> str:
     """Obtain the URL without opening public access before secure code is ready."""
     try:
@@ -111,10 +129,7 @@ def update_main_function(
         Environment={"Variables": merged},
     )
     lambda_client.get_waiter("function_updated_v2").wait(FunctionName=function_name)
-    lambda_client.put_function_concurrency(
-        FunctionName=function_name,
-        ReservedConcurrentExecutions=3,
-    )
+    set_reserved_concurrency(lambda_client, function_name, 3)
     return lambda_client.get_function_configuration(FunctionName=function_name)
 
 
@@ -164,10 +179,7 @@ def ensure_worker_function(
         )
 
     lambda_client.get_waiter("function_updated_v2").wait(FunctionName=WORKER_FUNCTION)
-    lambda_client.put_function_concurrency(
-        FunctionName=WORKER_FUNCTION,
-        ReservedConcurrentExecutions=2,
-    )
+    set_reserved_concurrency(lambda_client, WORKER_FUNCTION, 2)
     return lambda_client.get_function_configuration(FunctionName=WORKER_FUNCTION)[
         "FunctionArn"
     ]
@@ -230,10 +242,7 @@ def ensure_monitor_function(
                 time.sleep(5)
 
     lambda_client.get_waiter("function_updated_v2").wait(FunctionName=MONITOR_FUNCTION)
-    lambda_client.put_function_concurrency(
-        FunctionName=MONITOR_FUNCTION,
-        ReservedConcurrentExecutions=1,
-    )
+    set_reserved_concurrency(lambda_client, MONITOR_FUNCTION, 1)
     return lambda_client.get_function_configuration(FunctionName=MONITOR_FUNCTION)[
         "FunctionArn"
     ]
@@ -250,6 +259,7 @@ def ensure_event_source(lambda_client, worker_arn: str, queue_arn: str) -> None:
         "MaximumBatchingWindowInSeconds": 0,
         "FunctionResponseTypes": ["ReportBatchItemFailures"],
         "Enabled": True,
+        "ScalingConfig": {"MaximumConcurrency": 2},
     }
     for attempt in range(6):
         try:
