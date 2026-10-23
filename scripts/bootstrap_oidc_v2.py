@@ -9,9 +9,9 @@ from bootstrap_oidc import (
     GITHUB_OIDC_THUMBPRINTS,
     OIDC_HOST,
     OIDC_URL,
-    REPOSITORY,
     ROLE_NAME,
     deployment_policy,
+    trust_policy,
 )
 
 RETRIES = 10
@@ -64,28 +64,6 @@ def ensure_provider(iam, account_id: str) -> str:
             annotate_failure("audience repair", error)
             raise
     return provider_arn
-
-
-def trust_policy(provider_arn: str) -> dict:
-    # This repository predates GitHub's July 15, 2026 immutable-subject default,
-    # so its issued subject is the traditional exact repository/ref value.
-    subject = f"repo:{REPOSITORY}:ref:refs/heads/main"
-    return {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {"Federated": provider_arn},
-                "Action": "sts:AssumeRoleWithWebIdentity",
-                "Condition": {
-                    "StringEquals": {
-                        f"{OIDC_HOST}:aud": "sts.amazonaws.com",
-                        f"{OIDC_HOST}:sub": subject,
-                    }
-                },
-            }
-        ],
-    }
 
 
 def ensure_role(iam, provider_arn: str) -> None:

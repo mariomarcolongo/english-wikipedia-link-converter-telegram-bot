@@ -49,26 +49,23 @@ class DeploymentPolicyTests(unittest.TestCase):
 
 
 class ArchitectureTests(unittest.TestCase):
-    def test_existing_lambda_is_migrated_to_arm64(self):
+    def test_existing_worker_package_and_architecture_change_together(self):
         lambda_client = Mock()
-        lambda_client.get_function_configuration.side_effect = [
-            {"Architectures": ["x86_64"]},
-            {"Architectures": ["arm64"]},
-        ]
-        waiter = Mock()
-        lambda_client.get_waiter.return_value = waiter
-
-        result = lambda_resources._ensure_function_architecture(
-            lambda_client,
-            "ToEnWikipediaBot",
+        lambda_client.get_function_configuration.return_value = {
+            "Architectures": ["x86_64"], "FunctionArn": "worker-arn",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / "worker.zip"
+            package.write_bytes(b"arm package")
+            result = lambda_resources.ensure_worker_function(
+                lambda_client, package, "runtime-role", {},
+            )
+        self.assertEqual(result, "worker-arn")
+        lambda_client.update_function_code.assert_called_once_with(
+            FunctionName="ToEnWikipediaBotWorker", ZipFile=b"arm package",
+            Publish=False, Architectures=["arm64"],
         )
-
-        lambda_client.update_function_configuration.assert_called_once_with(
-            FunctionName="ToEnWikipediaBot",
-            Architectures=["arm64"],
-        )
-        waiter.wait.assert_called_once_with(FunctionName="ToEnWikipediaBot")
-        self.assertEqual(result["Architectures"], ["arm64"])
+        self.assertNotIn("Architectures", lambda_client.update_function_configuration.call_args.kwargs)
 
     def test_arm64_elf_package_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:

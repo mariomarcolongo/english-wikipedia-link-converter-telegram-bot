@@ -97,22 +97,26 @@ Optional GitHub repository variable:
 
 The long-lived IAM user only needs permission to create the repository-scoped GitHub OIDC provider and role. Using an AWS administrator session, attach the repository file `aws/github-deployer-oidc-bootstrap-policy.json` as an inline policy on the `GitHub_Deployer` user, then re-run the workflow.
 
-The workflow stops before changing Lambda when this bootstrap permission is missing. On the first successful deployment it creates a role restricted to this repository and the `main` branch. After that run succeeds, delete the long-lived `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` GitHub secrets; future deployments use short-lived credentials.
+The workflow stops before changing Lambda when this bootstrap permission is missing. On the first successful deployment it creates a role restricted to this repository's `production` environment. Configure that environment in GitHub to allow deployments from the `main` branch only. The job also rejects stale commits and serializes production deployments without cancelling an active rollout. OIDC token permission is limited to the deploy job.
+
+After OIDC deployment succeeds, remove the temporary inline bootstrap policy from `GitHub_Deployer` and delete the long-lived `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` GitHub secrets. Future merges to `main` deploy automatically using short-lived credentials. The normal OIDC path does not require either long-lived secret.
 
 The deployment automatically:
 
 1. verifies the Python tests, dependency review, and ARM64 native wheels;
-2. restores an architecture-compatible known-good bot before migration;
+2. privately snapshots the actual deployed Lambda packages, configuration, Function URL policy, webhook, and command menus on the runner;
 3. validates the ARM64 package through a real worker Lambda invocation;
-4. migrates the public Lambda to ARM64 and deploys the durable handler;
+4. prepares dependencies and runtime settings, then uploads the public package and ARM64 architecture together;
 5. creates or updates SQS, DynamoDB, SNS, IAM, the dedicated worker and monitor Lambdas, schedule, alarms, log retention, and optional budget;
-6. creates and stores a webhook secret without printing it;
+6. creates and stores a webhook secret without printing it, then checks the configured handler before opening public Function URL access;
 7. points Telegram directly to the Lambda Function URL with `drop_pending_updates=false`;
 8. limits Telegram to `message`, `channel_post`, and `inline_query` updates;
 9. configures the BotFather command menu through `setMyCommands`;
-10. invokes the independent monitor and removes legacy API Gateway invoke permission only after the Function URL webhook is verified.
+10. invokes the independent monitor, verifies the live commit matches the workflow commit, and removes legacy API Gateway invoke permission only after the Function URL webhook is verified.
 
-If deployment fails after packages are built, the workflow reads the function's current architecture and restores either the ARM64 or x86_64 known-good package automatically.
+If deployment fails after production changes begin, the workflow restores the previous packages, architectures, runtime configuration, concurrency settings, Function URL access, webhook, and command menus. It disables worker mappings and monitor schedules introduced by a failed first migration. A secondary function rollback failure does not prevent recovery of the main bot and webhook. Queue contents, state tables, and infrastructure policies are retained; this is a service rollback, not a destructive infrastructure rollback. Failures before production changes do not trigger a rollback.
+
+Snapshots contain runtime secrets, stay in a private directory on the ephemeral runner, are never uploaded as artifacts, and are removed at the end of the job. A manually cancelled run attempts recovery, but a forcibly terminated runner or AWS outage can interrupt recovery and require a manual workflow rerun. GitHub Actions notifications report deployment failures; the independent AWS monitor checks runtime health every 15 minutes once provisioned.
 
 The old API Gateway resource may remain visible in AWS after its invoke permission is removed. It can be deleted manually once the Function URL webhook has been verified.
 

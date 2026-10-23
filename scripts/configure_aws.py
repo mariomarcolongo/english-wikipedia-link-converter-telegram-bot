@@ -24,6 +24,7 @@ from aws_setup.lambda_resources import (
     ensure_function_url,
     ensure_monitor_function,
     ensure_worker_function,
+    prepare_function_url,
     update_main_function,
 )
 from aws_setup.monitoring import (
@@ -34,6 +35,7 @@ from aws_setup.monitoring import (
 )
 from aws_setup.storage import ensure_queues, ensure_table, ensure_topic
 from aws_setup.telegram_setup import configure_webhook
+from deploy_arm64 import invoke_health, update_code
 
 T = TypeVar("T")
 DIAGNOSTIC_PATH = Path(os.getenv("DEPLOYMENT_DIAGNOSTIC_PATH", "deployment-failure.json"))
@@ -117,8 +119,8 @@ def main() -> None:
         alert_email,
     )
     function_url = run_stage(
-        "Create or update Lambda Function URL",
-        ensure_function_url,
+        "Read or prepare the restricted Lambda Function URL",
+        prepare_function_url,
         lambda_client,
         function_name,
     )
@@ -213,13 +215,6 @@ def main() -> None:
         monitor_arn,
     )
     run_stage(
-        "Create or update 15-minute health schedule",
-        ensure_schedule,
-        scheduler,
-        monitor_arn,
-        scheduler_role_arn,
-    )
-    run_stage(
         "Create or update CloudWatch alarms",
         ensure_alarms,
         cloudwatch,
@@ -240,9 +235,8 @@ def main() -> None:
         budget_amount,
     )
 
-    # Cut over only after every dependency is ready. The currently deployed
-    # handler already understands Telegram's secret header, so the old code
-    # remains operational while the workflow uploads the new package next.
+    # Cut over only after every dependency is ready. Install the webhook secret
+    # and queue settings before uploading the new package and opening the URL.
     run_stage(
         "Configure public Lambda environment",
         update_main_function,
@@ -250,12 +244,22 @@ def main() -> None:
         function_name,
         shared_environment,
     )
+    run_stage(
+        "Deploy ARM64 public Lambda package",
+        update_code, lambda_client, function_name, bot_zip.read_bytes(),
+    )
+    run_stage("Verify configured public Lambda", invoke_health, lambda_client, function_name)
+    run_stage("Enable secure public Function URL", ensure_function_url, lambda_client, function_name)
     webhook_info = run_stage(
         "Register authenticated Telegram Function URL webhook",
         configure_webhook,
         token,
         function_url,
         webhook_secret,
+    )
+    run_stage(
+        "Create or update 15-minute health schedule",
+        ensure_schedule, scheduler, monitor_arn, scheduler_role_arn,
     )
 
     print(
