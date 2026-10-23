@@ -24,6 +24,29 @@ def missing():
 
 
 class DeploymentTrustTests(unittest.TestCase):
+    def test_small_account_uses_shared_concurrency_instead_of_failing(self):
+        client = Mock()
+        client.put_function_concurrency.side_effect = ClientError({"Error": {
+            "Code": "InvalidParameterValueException",
+            "Message": "Specified ReservedConcurrentExecutions decreases account's UnreservedConcurrentExecution below its minimum value of [10].",
+        }}, "PutFunctionConcurrency")
+        lambda_resources.set_reserved_concurrency(client, "bot", 3)
+        client.delete_function_concurrency.assert_not_called()
+
+    def test_unrelated_concurrency_errors_still_fail(self):
+        client = Mock()
+        client.put_function_concurrency.side_effect = ClientError({"Error": {
+            "Code": "InvalidParameterValueException", "Message": "Different invalid setting",
+        }}, "PutFunctionConcurrency")
+        with self.assertRaises(ClientError):
+            lambda_resources.set_reserved_concurrency(client, "bot", 3)
+
+    def test_worker_is_bounded_even_without_reserved_capacity(self):
+        client = Mock()
+        client.list_event_source_mappings.return_value = {"EventSourceMappings": []}
+        lambda_resources.ensure_event_source(client, "worker-arn", "queue-arn")
+        self.assertEqual(client.create_event_source_mapping.call_args.kwargs["ScalingConfig"], {"MaximumConcurrency": 2})
+
     def test_oidc_diagnostics_never_print_tokens_or_unselected_claims(self):
         payload = {"aud": "sts.amazonaws.com", "sub": "public-subject", "private_claim": "do-not-log"}
         encoded = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
