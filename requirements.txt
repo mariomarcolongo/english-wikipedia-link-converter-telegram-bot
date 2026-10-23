@@ -14,7 +14,7 @@ anyio==4.14.2
     # via httpx
 attrs==26.1.0
     # via aiohttp
-certifi==2026.6.17
+certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
