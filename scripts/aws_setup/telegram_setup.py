@@ -24,7 +24,24 @@ def configure_webhook(token: str, function_url: str, secret_token: str) -> dict:
                 {"command": "source", "description": "View the source code"},
                 {"command": "license", "description": "View licenses and image credits"},
                 {"command": "privacy", "description": "View the privacy policy"},
+                {"command": "language", "description": "Set or view your language preference"},
             ]
+        },
+    )
+    telegram_api(
+        token,
+        "setMyCommands",
+        {
+            "language_code": "it",
+            "commands": [
+                {"command": "start", "description": "Avvia il bot e mostra le istruzioni"},
+                {"command": "help", "description": "Mostra le istruzioni per l'uso"},
+                {"command": "status", "description": "Controlla lo stato del servizio"},
+                {"command": "source", "description": "Visualizza il codice sorgente"},
+                {"command": "license", "description": "Visualizza licenze e crediti delle immagini"},
+                {"command": "privacy", "description": "Visualizza l'informativa sulla privacy"},
+                {"command": "language", "description": "Imposta o visualizza la preferenza della lingua"},
+            ],
         },
     )
     info = telegram_api(token, "getWebhookInfo")

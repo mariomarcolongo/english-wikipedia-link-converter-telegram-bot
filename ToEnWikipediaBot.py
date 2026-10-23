@@ -51,6 +51,7 @@ RECOVERY_WINDOW_SECONDS = int(os.getenv("RECOVERY_WINDOW_SECONDS", "21600"))
 RECOVERY_PRIVATE_LIMIT = int(os.getenv("RECOVERY_PRIVATE_LIMIT", "3"))
 IDEMPOTENCY_TTL_SECONDS = int(os.getenv("IDEMPOTENCY_TTL_SECONDS", "172800"))
 PROCESSING_LEASE_SECONDS = int(os.getenv("PROCESSING_LEASE_SECONDS", "60"))
+LANGUAGE_PREFERENCE_TTL_SECONDS = 365 * 24 * 60 * 60
 HTTP_TIMEOUT = aiohttp.ClientTimeout(total=5, connect=2)
 USER_AGENT = (
     "EnglishWikipediaLinkConverterBot/2.0 "
@@ -76,6 +77,164 @@ class WikipediaLink:
     url: str
     language_code: str
     article_title: str
+
+
+TEXT = {
+    "en": {
+        "found": "English Wikipedia page found for",
+        "not_found": "No English Wikipedia page found for",
+        "delayed": "Delayed while the bot was recovering from an outage.",
+        "recovery_skipped_private": "The bot was temporarily unavailable. This older request was skipped to prevent delayed spam; please resend the Wikipedia link if you still need it.",
+        "recovery_skipped_group": "The bot was temporarily unavailable. Older conversions were skipped to avoid flooding this chat; please resend any link that is still needed.",
+        "rate_limit": "Too many conversion requests. Please wait about a minute and try again.",
+        "inline_found": "English Wikipedia Link Found",
+        "inline_many": "{count} English Wikipedia Links Processed",
+        "inline_click": "Click to view converted links",
+        "inline_unavailable": "Conversion Temporarily Unavailable",
+        "inline_retry": "The Wikipedia lookup did not complete. Try again.",
+        "inline_retry_message": "The Wikipedia lookup did not complete. Please try again.",
+        "inline_none": "No Wikipedia Links",
+        "inline_enter": "Type or paste a non-English Wikipedia URL.",
+        "inline_enter_message": "Please enter non-English Wikipedia page URL(s).",
+        "source": "You can find my source code here:\n{url}\n\nFeel free to contribute or fork to create your own version!",
+        "license_title": "License",
+        "license_code": "The code in this repository is licensed under the ",
+        "except_otherwise": ", except where otherwise specified.",
+        "license_icon": "The icon for the <b>English Wikipedia Link Converter</b> Telegram Bot is licensed under a ",
+        "license_see": "See the ",
+        "license_details": "icon directory</a> for more details.",
+        "image_credits": "Image Credits",
+        "icon_sources": "The bot's icon incorporates images from the following sources:",
+        "wiki_logo": "Wikipedia logo",
+        "wiki_logo_credit": "Version2 by Vanished user 24kwjf10h32h, Version 1 by Nohat (concept by Paullusmagnus); Wikimedia., is used under a ",
+        "wiki_logo_license": "Creative Commons Attribution-ShareAlike 3.0 Unported License (CC BY-SA 3.0)</a> and can be found ",
+        "commons": "here on Wikimedia Commons",
+        "left_arrow": "Left arrow",
+        "left_arrow_credit": "by Icons8 is licensed under ",
+        "available": " and is available ",
+        "healthy": "✅ Operational",
+        "unhealthy": "⚠️ Service disruption detected",
+        "unknown_status": "❔ Status not available yet",
+        "seconds_ago": "{count} seconds ago",
+        "unknown": "unknown",
+        "status": "Status:",
+        "last_check": "Last external check:",
+        "pending": "Telegram pending updates:",
+        "queue_depth": "Queue depth:",
+        "version": "Version:",
+        "status_updates": "Status updates",
+        "hello": "Hello {name}!",
+        "bot_intro": "I am the <b>English Wikipedia Link Converter Bot</b>.",
+        "bot_description": "I convert any non-English Wikipedia link into its English equivalent.",
+        "commands": "Commands:",
+        "help_command": "Display this help message",
+        "status_command": "Check the bot's service status",
+        "source_command": "Get the link to the bot's source code",
+        "license_command": "View the bot's license and image credits",
+        "privacy_command": "View the bot's Privacy Policy",
+        "how_to": "How to Use Me:",
+        "send_link": "Send me any non-English Wikipedia link.",
+        "add_group_instruction": "Add me to a group to convert links shared by members.",
+        "inline_instruction": "Use inline mode by typing <code>@{username}</code> followed by the links.",
+        "service_notices": "Service notices: ",
+        "status_channel": "status channel",
+        "add_group": "Add me to your group",
+        "service_status": "Service status",
+        "privacy_policy": "Privacy Policy:",
+        "language_command": "Set or view your language preference",
+        "language_current": "Language preference: {language}.",
+        "language_choose": "Choose /language auto, /language en, or /language it.",
+        "language_auto": "Automatic (Telegram language)",
+        "language_english": "English",
+        "language_italian": "Italian",
+        "language_set": "Language set to {language}.",
+        "language_auto_set": "Language set to automatic. I will use your Telegram language when available, otherwise English.",
+        "language_save_error": "I could not save your language preference. Please try again later.",
+    },
+    "it": {
+        "found": "Trovata una pagina di Wikipedia in inglese per",
+        "not_found": "Nessuna pagina di Wikipedia in inglese trovata per",
+        "delayed": "Elaborato in ritardo mentre il bot si riprendeva da un'interruzione del servizio.",
+        "recovery_skipped_private": "Il servizio del bot ha subito un'interruzione temporanea. Questa richiesta meno recente è stata ignorata per evitare messaggi in ritardo; se ti serve ancora, invia di nuovo il link a Wikipedia.",
+        "recovery_skipped_group": "Il servizio del bot ha subito un'interruzione temporanea. Le conversioni meno recenti sono state ignorate per non riempire la chat; invia di nuovo i link che ti servono ancora.",
+        "rate_limit": "Troppe richieste di conversione. Attendi circa un minuto e riprova.",
+        "inline_found": "Pagina di Wikipedia in inglese trovata",
+        "inline_many": "Elaborati {count} link di Wikipedia in inglese",
+        "inline_click": "Tocca per visualizzare i link convertiti",
+        "inline_unavailable": "Conversione temporaneamente non disponibile",
+        "inline_retry": "La ricerca su Wikipedia non è andata a buon fine. Riprova.",
+        "inline_retry_message": "La ricerca su Wikipedia non è andata a buon fine. Riprova.",
+        "inline_none": "Nessun link a Wikipedia",
+        "inline_enter": "Scrivi o incolla un URL di Wikipedia non in inglese.",
+        "inline_enter_message": "Inserisci uno o più URL di pagine Wikipedia non in inglese.",
+        "source": "Puoi trovare qui il codice sorgente:\n{url}\n\nContribuisci liberamente o crea una tua versione con un fork!",
+        "license_title": "Licenza",
+        "license_code": "Il codice in questo repository è distribuito con la licenza ",
+        "except_otherwise": ", salvo diversa indicazione.",
+        "license_icon": "L'icona del bot Telegram <b>English Wikipedia Link Converter</b> è distribuita con la licenza ",
+        "license_see": "Consulta la ",
+        "license_details": "directory dell'icona</a> per maggiori dettagli.",
+        "image_credits": "Crediti delle immagini",
+        "icon_sources": "L'icona del bot include immagini provenienti dalle seguenti fonti:",
+        "wiki_logo": "Logo di Wikipedia",
+        "wiki_logo_credit": "Versione 2 di Vanished user 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza ",
+        "wiki_logo_license": "Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0)</a>; è disponibile ",
+        "commons": "qui su Wikimedia Commons",
+        "left_arrow": "Freccia a sinistra",
+        "left_arrow_credit": "di Icons8, distribuita con licenza ",
+        "available": " e disponibile ",
+        "healthy": "✅ Operativo",
+        "unhealthy": "⚠️ Rilevata un'interruzione del servizio",
+        "unknown_status": "❔ Stato non ancora disponibile",
+        "seconds_ago": "{count} secondi fa",
+        "unknown": "sconosciuto",
+        "status": "Stato:",
+        "last_check": "Ultimo controllo esterno:",
+        "pending": "Aggiornamenti Telegram in attesa:",
+        "queue_depth": "Elementi in coda:",
+        "version": "Versione:",
+        "status_updates": "Aggiornamenti sullo stato del servizio",
+        "hello": "Ciao {name}!",
+        "bot_intro": "Sono il <b>bot English Wikipedia Link Converter</b>.",
+        "bot_description": "Converto i link a pagine Wikipedia in altre lingue nel corrispondente link alla versione inglese.",
+        "commands": "Comandi:",
+        "help_command": "Mostra queste istruzioni",
+        "status_command": "Controlla lo stato del servizio del bot",
+        "source_command": "Mostra il link al codice sorgente del bot",
+        "license_command": "Mostra le licenze e i crediti delle immagini",
+        "privacy_command": "Mostra l'informativa sulla privacy del bot",
+        "how_to": "Come usarmi:",
+        "send_link": "Inviami un link a una pagina Wikipedia in un'altra lingua.",
+        "add_group_instruction": "Aggiungimi a un gruppo per convertire i link condivisi dai partecipanti.",
+        "inline_instruction": "Per usare la modalità inline, digita <code>@{username}</code> seguito dai link.",
+        "service_notices": "Avvisi sul servizio: ",
+        "status_channel": "canale degli aggiornamenti",
+        "add_group": "Aggiungimi al tuo gruppo",
+        "service_status": "Stato del servizio",
+        "privacy_policy": "Informativa sulla privacy:",
+        "language_command": "Imposta o visualizza la preferenza della lingua",
+        "language_current": "Preferenza della lingua: {language}.",
+        "language_choose": "Scegli /language auto, /language en oppure /language it.",
+        "language_auto": "Automatica (lingua di Telegram)",
+        "language_english": "Inglese",
+        "language_italian": "Italiano",
+        "language_set": "Lingua impostata su {language}.",
+        "language_auto_set": "Lingua impostata su automatica. Userò la lingua di Telegram quando disponibile; altrimenti userò l'inglese.",
+        "language_save_error": "Non riesco a salvare la preferenza della lingua. Riprova più tardi.",
+    },
+}
+
+
+def _detected_language(user) -> str:
+    if isinstance(user, dict):
+        language_code = user.get("language_code") or ""
+    else:
+        language_code = getattr(user, "language_code", None) or ""
+    return "it" if language_code.lower().split("-", 1)[0] == "it" else "en"
+
+
+def _text(language: str, key: str, **values: str) -> str:
+    return TEXT[language][key].format(**values)
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -205,6 +364,66 @@ def _ddb_number(value: int) -> dict[str, str]:
 
 def _ddb_string(value: str) -> dict[str, str]:
     return {"S": value}
+
+
+def _language_preference_key(user_id: int) -> dict[str, dict[str, str]]:
+    return {"pk": _ddb_string(f"language-preference#{user_id}")}
+
+
+def _read_language_preference(user_id: int | None) -> str | None:
+    table_name = _state_table_name()
+    if not table_name or user_id is None:
+        return None
+    try:
+        item = _aws_client("dynamodb").get_item(
+            TableName=table_name,
+            Key=_language_preference_key(user_id),
+            ConsistentRead=True,
+        ).get("Item", {})
+        language = item.get("language", {}).get("S")
+        return language if language in {"en", "it"} else None
+    except Exception as error:
+        logger.exception("Could not read language preference.")
+        raise TemporaryStateError("Could not read language preference") from error
+
+
+def _save_language_preference(user_id: int | None, language: str) -> bool:
+    table_name = _state_table_name()
+    if not table_name or user_id is None:
+        return False
+    try:
+        client = _aws_client("dynamodb")
+        key = _language_preference_key(user_id)
+        if language == "auto":
+            client.delete_item(TableName=table_name, Key=key)
+        else:
+            client.update_item(
+                TableName=table_name,
+                Key=key,
+                UpdateExpression="SET #language = :language, expires_at = :expires",
+                ExpressionAttributeNames={"#language": "language"},
+                ExpressionAttributeValues={
+                    ":language": _ddb_string(language),
+                    ":expires": _ddb_number(int(time.time()) + LANGUAGE_PREFERENCE_TTL_SECONDS),
+                },
+            )
+        return True
+    except Exception:
+        logger.exception("Could not save language preference.")
+        return False
+
+
+async def _language_for_user(user) -> str:
+    detected = _detected_language(user)
+    user_id = getattr(user, "id", None)
+    if user_id is None:
+        return detected
+    preference = await asyncio.to_thread(_read_language_preference, user_id)
+    return preference or detected
+
+
+async def _language(update: Update) -> str:
+    return await _language_for_user(getattr(update, "effective_user", None))
 
 
 def _conditional_failed(error: Exception) -> bool:
@@ -388,6 +607,7 @@ def _effective_actor_id(update: Update) -> int | None:
 async def get_english_wikipedia_url(
     session: aiohttp.ClientSession,
     link: WikipediaLink,
+    language: str = "en",
 ) -> str | None:
     if link.language_code == "en":
         return None
@@ -436,6 +656,7 @@ async def get_english_wikipedia_url(
     langlinks = page.get("langlinks") or []
     escaped_title = escape(str(correct_title), quote=True)
     escaped_original_url = escape(link.url, quote=True)
+    messages = TEXT[language]
 
     if langlinks:
         english_title = langlinks[0].get("title") or langlinks[0].get("*")
@@ -446,13 +667,13 @@ async def get_english_wikipedia_url(
             )
             english_url = f"https://en.wikipedia.org/wiki/{english_path}"
             return (
-                f'<b>English Wikipedia page found for '
+                f'<b>{messages["found"]} '
                 f'<a href="{escaped_original_url}">{escaped_title}</a></b>:\n'
                 f"{english_url}"
             )
 
     return (
-        f'<b>No English Wikipedia page found for '
+        f'<b>{messages["not_found"]} '
         f'<a href="{escaped_original_url}">{escaped_title}</a></b>.'
     )
 
@@ -460,16 +681,17 @@ async def get_english_wikipedia_url(
 async def process_link(
     session: aiohttp.ClientSession,
     link: WikipediaLink | str,
+    language: str = "en",
 ) -> str | None:
     if isinstance(link, str):
         parsed_link = normalize_wikipedia_url(link)
         if parsed_link is None:
             return None
         link = parsed_link
-    return await get_english_wikipedia_url(session, link)
+    return await get_english_wikipedia_url(session, link, language)
 
 
-async def _resolve_links(links: list[WikipediaLink]) -> list[str]:
+async def _resolve_links(links: list[WikipediaLink], language: str = "en") -> list[str]:
     if not links:
         return []
     async with aiohttp.ClientSession(
@@ -477,7 +699,7 @@ async def _resolve_links(links: list[WikipediaLink]) -> list[str]:
         headers={"User-Agent": USER_AGENT},
     ) as session:
         results = await asyncio.gather(
-            *(process_link(session, link) for link in links),
+            *(process_link(session, link, language) for link in links),
             return_exceptions=True,
         )
 
@@ -504,14 +726,14 @@ async def _reply_message_safely(message, text: str, **kwargs):
         return await message.reply_text(text, **kwargs)
 
 
-async def _send_rate_limit_warning(message, chat_id: int | None) -> None:
+async def _send_rate_limit_warning(message, chat_id: int | None, language: str = "en") -> None:
     if chat_id is not None:
         allowed, _ = reserve_notice(chat_id, "rate-limit", 1)
         if not allowed:
             return
     await _reply_message_safely(
         message,
-        "Too many conversion requests. Please wait about a minute and try again.",
+        TEXT[language]["rate_limit"],
     )
 
 
@@ -529,16 +751,17 @@ async def check_wiki_link(
 
     actor_id = _effective_actor_id(update)
     chat_id = getattr(update.effective_chat, "id", None)
+    language = await _language(update)
     if not allow_conversion(actor_id, chat_id):
-        await _send_rate_limit_warning(message, chat_id)
+        await _send_rate_limit_warning(message, chat_id, language)
         return
 
-    responses = await _resolve_links(links)
+    responses = await _resolve_links(links, language)
     if not responses:
         return
 
     delayed = bool(context.application.bot_data.get("delayed_update"))
-    prefix = "<i>Delayed while the bot was recovering from an outage.</i>\n\n" if delayed else ""
+    prefix = f'<i>{TEXT[language]["delayed"]}</i>\n\n' if delayed else ""
     await _reply_message_safely(
         message,
         prefix + "\n\n".join(responses),
@@ -562,7 +785,8 @@ async def inline_query(
 
     links = extract_wikipedia_links(extract_urls_from_text(inline.query))
     try:
-        responses = await _resolve_links(links)
+        language = await _language_for_user(inline.from_user)
+        responses = await _resolve_links(links, language)
         aggregated_response = "\n\n".join(responses).strip()
     except TemporaryLookupError:
         aggregated_response = ""
@@ -570,11 +794,11 @@ async def inline_query(
 
     if aggregated_response:
         if len(links) == 1:
-            preview_title = "English Wikipedia Link Found"
+            preview_title = TEXT[language]["inline_found"]
             preview_desc = aggregated_response.splitlines()[-1]
         else:
-            preview_title = f"{len(responses)} English Wikipedia Links Processed"
-            preview_desc = "Click to view converted links"
+            preview_title = TEXT[language]["inline_many"].format(count=len(responses))
+            preview_desc = TEXT[language]["inline_click"]
         results = [
             InlineQueryResultArticle(
                 id=str(uuid4()),
@@ -591,10 +815,10 @@ async def inline_query(
         results = [
             InlineQueryResultArticle(
                 id=str(uuid4()),
-                title="Conversion Temporarily Unavailable",
-                description="The Wikipedia lookup did not complete. Try again.",
+                title=TEXT[language]["inline_unavailable"],
+                description=TEXT[language]["inline_retry"],
                 input_message_content=InputTextMessageContent(
-                    "The Wikipedia lookup did not complete. Please try again."
+                    TEXT[language]["inline_retry_message"]
                 ),
             )
         ]
@@ -602,10 +826,10 @@ async def inline_query(
         results = [
             InlineQueryResultArticle(
                 id=str(uuid4()),
-                title="No Wikipedia Links",
-                description="Type or paste a non-English Wikipedia URL.",
+                title=TEXT[language]["inline_none"],
+                description=TEXT[language]["inline_enter"],
                 input_message_content=InputTextMessageContent(
-                    "Please enter non-English Wikipedia page URL(s)."
+                    TEXT[language]["inline_enter_message"]
                 ),
             )
         ]
@@ -625,43 +849,40 @@ async def _reply(update: Update, text: str, **kwargs) -> None:
 
 
 async def source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    url = "https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/"
     await _reply(
         update,
-        "You can find my source code here:\n"
-        "https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/\n\n"
-        "Feel free to contribute or fork to create your own version!",
+        _text(await _language(update), "source", url=url),
     )
 
 
 async def license_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    labels = TEXT[await _language(update)]
     license_text = (
-        "<b>License</b>\n\n"
-        "The code in this repository is licensed under the "
+        f"<b>{labels['license_title']}</b>\n\n"
+        f"{labels['license_code']}"
         '<a href="https://www.gnu.org/licenses/agpl-3.0.en.html">'
-        "GNU Affero General Public License v3.0 (AGPL-3.0)</a>, "
-        "except where otherwise specified.\n\n"
-        "The icon for the <b>English Wikipedia Link Converter</b> Telegram Bot "
-        "is licensed under a "
+        "GNU Affero General Public License v3.0 (AGPL-3.0)</a>"
+        f"{labels['except_otherwise']}\n\n"
+        f"{labels['license_icon']}"
         '<a href="http://creativecommons.org/licenses/by-sa/4.0/">'
         "Creative Commons Attribution-ShareAlike 4.0 International License "
-        "(CC BY-SA 4.0)</a>. See the "
+        "(CC BY-SA 4.0)</a>. "
+        f"{labels['license_see']}"
         '<a href="https://github.com/mariomarcolongo/english-wikipedia-link-converter-telegram-bot/tree/main/Telegram-Bot-Icon">'
-        "icon directory</a> for more details.\n\n"
-        "<b>Image Credits</b>\n\n"
-        "The bot's icon incorporates images from the following sources:\n\n"
-        "- <b>Wikipedia logo</b>, Version2 by Vanished user 24kwjf10h32h, "
-        "Version 1 by Nohat (concept by Paullusmagnus); Wikimedia., is used "
-        "under a "
+        f"{labels['license_details']}\n\n"
+        f"<b>{labels['image_credits']}</b>\n\n"
+        f"{labels['icon_sources']}\n\n"
+        f"- <b>{labels['wiki_logo']}</b>, {labels['wiki_logo_credit']}"
         '<a href="https://creativecommons.org/licenses/by-sa/3.0/">'
-        "Creative Commons Attribution-ShareAlike 3.0 Unported License "
-        "(CC BY-SA 3.0)</a> and can be found "
+        f"{labels['wiki_logo_license']}"
         '<a href="https://commons.wikimedia.org/wiki/File:Wikipedia-logo-v2-square.svg">'
-        "here on Wikimedia Commons</a>.\n\n"
-        "- <b>Left arrow</b>, by Icons8 is licensed under "
+        f"{labels['commons']}</a>.\n\n"
+        f"- <b>{labels['left_arrow']}</b>, {labels['left_arrow_credit']}"
         '<a href="https://creativecommons.org/share-your-work/public-domain/cc0/">'
-        "CC0</a> and is available "
+        f"CC0</a>{labels['available']}"
         '<a href="https://commons.wikimedia.org/wiki/File:Left-arrow_(61413)_-_The_Noun_Project.svg">'
-        "here on Wikimedia Commons</a>."
+        f"{labels['commons']}</a>."
     )
     await _reply(
         update,
@@ -696,26 +917,28 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     version = os.getenv("DEPLOYMENT_VERSION", "unknown")[:12]
     status_url = os.getenv("STATUS_CHANNEL_URL", "")
 
+    language = await _language(update)
+    labels = TEXT[language]
     if status == "healthy":
-        headline = "✅ Operational"
+        headline = labels["healthy"]
     elif status == "unhealthy":
-        headline = "⚠️ Service disruption detected"
+        headline = labels["unhealthy"]
     else:
-        headline = "❔ Status not available yet"
+        headline = labels["unknown_status"]
 
-    age_text = "unknown"
+    age_text = labels["unknown"]
     if checked_at:
-        age_text = f"{max(0, int(time.time()) - checked_at)} seconds ago"
+        age_text = labels["seconds_ago"].format(count=max(0, int(time.time()) - checked_at))
 
     text = (
-        f"<b>Status:</b> {headline}\n"
-        f"<b>Last external check:</b> {age_text}\n"
-        f"<b>Telegram pending updates:</b> {escape(str(pending))}\n"
-        f"<b>Queue depth:</b> {escape(str(queue_depth))}\n"
-        f"<b>Version:</b> <code>{escape(version)}</code>"
+        f"<b>{labels['status']}</b> {headline}\n"
+        f"<b>{labels['last_check']}</b> {age_text}\n"
+        f"<b>{labels['pending']}</b> {escape(str(pending))}\n"
+        f"<b>{labels['queue_depth']}</b> {escape(str(queue_depth))}\n"
+        f"<b>{labels['version']}</b> <code>{escape(version)}</code>"
     )
     if status_url:
-        text += f'\n\n<a href="{escape(status_url, quote=True)}">Status updates</a>'
+        text += f'\n\n<a href="{escape(status_url, quote=True)}">{labels["status_updates"]}</a>'
     await _reply(update, text, parse_mode="HTML", disable_web_page_preview=True)
 
 
@@ -728,35 +951,37 @@ async def send_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         bot_username = bot_user.username or "ToEnWikipediaBot"
 
     status_url = os.getenv("STATUS_CHANNEL_URL", "")
+    language = await _language(update)
+    labels = TEXT[language]
     description_text = (
-        f"Hello {first_name}!\n\n"
-        "I am the <b>English Wikipedia Link Converter Bot</b>.\n\n"
-        "I convert any non-English Wikipedia link into its English equivalent.\n\n"
-        "<b>Commands:</b>\n"
-        "/help - Display this help message\n"
-        "/status - Check the bot's service status\n"
-        "/source - Get the link to the bot's source code\n"
-        "/license - View the bot's license and image credits\n"
-        "/privacy - View the bot's Privacy Policy\n\n"
-        "<b>How to Use Me:</b>\n"
-        "- Send me any non-English Wikipedia link.\n"
-        "- Add me to a group to convert links shared by members.\n"
-        f"- Use inline mode by typing <code>@{escape(bot_username, quote=True)}</code> "
-        "followed by the links.\n"
+        f"{labels['hello'].format(name=first_name)}\n\n"
+        f"{labels['bot_intro']}\n\n"
+        f"{labels['bot_description']}\n\n"
+        f"<b>{labels['commands']}</b>\n"
+        f"/help - {labels['help_command']}\n"
+        f"/status - {labels['status_command']}\n"
+        f"/source - {labels['source_command']}\n"
+        f"/license - {labels['license_command']}\n"
+        f"/privacy - {labels['privacy_command']}\n"
+        f"/language - {labels['language_command']}\n\n"
+        f"<b>{labels['how_to']}</b>\n"
+        f"- {labels['send_link']}\n"
+        f"- {labels['add_group_instruction']}\n"
+        f"- {labels['inline_instruction'].format(username=escape(bot_username, quote=True))}\n"
     )
     if status_url:
         description_text += (
-            f'\nService notices: <a href="{escape(status_url, quote=True)}">status channel</a>.'
+            f'\n{labels["service_notices"]}<a href="{escape(status_url, quote=True)}">{labels["status_channel"]}</a>.'
         )
 
     keyboard = [[
         InlineKeyboardButton(
-            "Add me to your group",
+            labels["add_group"],
             url=f"https://t.me/{bot_username}?startgroup=true",
         )
     ]]
     if status_url:
-        keyboard.append([InlineKeyboardButton("Service status", url=status_url)])
+        keyboard.append([InlineKeyboardButton(labels["service_status"], url=status_url)])
 
     await _reply(
         update,
@@ -776,12 +1001,60 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def privacy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    language = await _language(update)
+    suffix = ".it" if language == "it" else ""
+    url = (
+        "https://mariomarcolongo.github.io/english-wikipedia-link-converter-telegram-bot/"
+        f"PRIVACY_POLICY{suffix}.html"
+    )
     await _reply(
         update,
-        "Privacy Policy:\n"
-        "https://mariomarcolongo.github.io/english-wikipedia-link-converter-telegram-bot/PRIVACY_POLICY.html",
+        f"{_text(language, 'privacy_policy')}\n{url}",
         disable_web_page_preview=True,
     )
+
+
+async def language_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_id = getattr(user, "id", None)
+    detected = _detected_language(user)
+    stored = await asyncio.to_thread(_read_language_preference, user_id)
+    args = getattr(context, "args", ()) or ()
+    choice = str(args[0]).lower() if args else ""
+
+    if not choice:
+        language = stored or detected
+        labels = TEXT[language]
+        selected = (
+            labels["language_italian"] if stored == "it"
+            else labels["language_english"] if stored == "en"
+            else labels["language_auto"]
+        )
+        await _reply(
+            update,
+            f"{labels['language_current'].format(language=selected)}\n"
+            f"{labels['language_choose']}",
+        )
+        return
+
+    if choice not in {"auto", "en", "it"}:
+        language = stored or detected
+        await _reply(update, TEXT[language]["language_choose"])
+        return
+
+    if not await asyncio.to_thread(_save_language_preference, user_id, choice):
+        language = stored or detected
+        await _reply(update, TEXT[language]["language_save_error"])
+        return
+
+    language = detected if choice == "auto" else choice
+    labels = TEXT[language]
+    if choice == "auto":
+        confirmation = labels["language_auto_set"]
+    else:
+        selected = labels["language_italian"] if choice == "it" else labels["language_english"]
+        confirmation = labels["language_set"].format(language=selected)
+    await _reply(update, confirmation)
 
 
 def setup_handlers(application: Application) -> None:
@@ -791,6 +1064,7 @@ def setup_handlers(application: Application) -> None:
     application.add_handler(CommandHandler("source", source))
     application.add_handler(CommandHandler("license", license_command))
     application.add_handler(CommandHandler("privacy", privacy))
+    application.add_handler(CommandHandler("language", language_command))
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, check_wiki_link)
     )
@@ -986,6 +1260,12 @@ async def _telegram_send_message(chat_id: int | str, text: str) -> None:
 async def _handle_stale_update(update_data: dict, policy: str) -> None:
     message = _message_payload(update_data) or {}
     chat = message.get("chat") or {}
+    sender = message.get("from") or message.get("sender_chat") or {}
+    stored_language = await asyncio.to_thread(
+        _read_language_preference,
+        sender.get("id"),
+    )
+    language = stored_language or _detected_language(sender)
     chat_id = chat.get("id")
     if not isinstance(chat_id, int):
         return
@@ -995,16 +1275,14 @@ async def _handle_stale_update(update_data: dict, policy: str) -> None:
         if allowed:
             await _telegram_send_message(
                 chat_id,
-                "The bot was temporarily unavailable. This older request was skipped "
-                "to prevent delayed spam; please resend the Wikipedia link if you still need it.",
+                TEXT[language]["recovery_skipped_private"],
             )
     elif policy == "skip-group" and _env_bool("RECOVERY_NOTICES_ENABLED", True):
         allowed, _ = reserve_notice(chat_id, "group-recovery", 1)
         if allowed:
             await _telegram_send_message(
                 chat_id,
-                "The bot was temporarily unavailable. Older conversions were skipped "
-                "to avoid flooding this chat; please resend any link that is still needed.",
+                TEXT[language]["recovery_skipped_group"],
             )
 
 
