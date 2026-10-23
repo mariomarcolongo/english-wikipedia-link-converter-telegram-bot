@@ -27,6 +27,21 @@ def configure_webhook(token: str, function_url: str, secret_token: str) -> dict:
             ]
         },
     )
+    telegram_api(
+        token,
+        "setMyCommands",
+        {
+            "language_code": "it",
+            "commands": [
+                {"command": "start", "description": "Avvia il bot e mostra le istruzioni"},
+                {"command": "help", "description": "Mostra le istruzioni per l'uso"},
+                {"command": "status", "description": "Controlla lo stato del servizio"},
+                {"command": "source", "description": "Visualizza il codice sorgente"},
+                {"command": "license", "description": "Visualizza licenze e crediti delle immagini"},
+                {"command": "privacy", "description": "Visualizza l'informativa sulla privacy"},
+            ],
+        },
+    )
     info = telegram_api(token, "getWebhookInfo")
     actual = str(info.get("url", "")).rstrip("/")
     expected = function_url.rstrip("/")
