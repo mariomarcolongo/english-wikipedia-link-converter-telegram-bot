@@ -1,4 +1,5 @@
 import io
+import base64
 import json
 import os
 import sys
@@ -14,6 +15,7 @@ import bootstrap_oidc
 import bootstrap_oidc_v2
 import deployment_snapshot as snapshot
 import deploy_arm64
+import inspect_oidc
 from aws_setup import lambda_resources
 
 
@@ -22,6 +24,19 @@ def missing():
 
 
 class DeploymentTrustTests(unittest.TestCase):
+    def test_oidc_diagnostics_never_print_tokens_or_unselected_claims(self):
+        payload = {"aud": "sts.amazonaws.com", "sub": "public-subject", "private_claim": "do-not-log"}
+        encoded = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+        token = f"header.{encoded}.signature"
+        response = io.BytesIO(json.dumps({"value": token}).encode())
+        output = io.StringIO()
+        with patch.dict(os.environ, {"ACTIONS_ID_TOKEN_REQUEST_URL": "https://example/token?job=1", "ACTIONS_ID_TOKEN_REQUEST_TOKEN": "private-request-token"}), patch.object(inspect_oidc.urllib.request, "urlopen", return_value=response), patch("sys.stdout", output):
+            inspect_oidc.main()
+        self.assertEqual(json.loads(output.getvalue()), {"aud": "sts.amazonaws.com", "sub": "public-subject"})
+        self.assertNotIn(token, output.getvalue())
+        self.assertNotIn("private-request-token", output.getvalue())
+        self.assertNotIn("do-not-log", output.getvalue())
+
     def test_both_bootstraps_match_production_environment_token(self):
         provider = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
         for module in (bootstrap_oidc, bootstrap_oidc_v2):

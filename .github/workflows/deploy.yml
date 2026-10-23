@@ -103,6 +103,9 @@ jobs:
             exit 1
           fi
 
+      - name: Report OIDC identity claims without exposing tokens
+        run: python scripts/inspect_oidc.py
+
       - name: Try short-lived AWS credentials through GitHub OIDC
         id: oidc
         continue-on-error: true
@@ -151,6 +154,7 @@ jobs:
           role-session-name: ToEnWikipediaBotDeploy
           mask-aws-account-id: true
           unset-current-credentials: true
+          retry-max-attempts: 5
 
       - name: Refresh repository-scoped OIDC policy
         if: steps.oidc.outcome == 'success' || steps.bootstrap.outcome == 'success'
