@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from pathlib import Path
@@ -21,23 +22,12 @@ def wait_for_update(lambda_client, function_name: str) -> None:
     lambda_client.get_waiter("function_updated_v2").wait(FunctionName=function_name)
 
 
-def ensure_architecture(lambda_client, function_name: str) -> dict:
-    current = lambda_client.get_function_configuration(FunctionName=function_name)
-    if (current.get("Architectures") or ["x86_64"]) != [MAIN_ARCHITECTURE]:
-        lambda_client.update_function_configuration(
-            FunctionName=function_name,
-            Architectures=[MAIN_ARCHITECTURE],
-        )
-        wait_for_update(lambda_client, function_name)
-        current = lambda_client.get_function_configuration(FunctionName=function_name)
-    return current
-
-
 def update_code(lambda_client, function_name: str, code: bytes) -> None:
     lambda_client.update_function_code(
         FunctionName=function_name,
         ZipFile=code,
         Publish=False,
+        Architectures=[MAIN_ARCHITECTURE],
     )
     wait_for_update(lambda_client, function_name)
 
@@ -61,7 +51,7 @@ def invoke_health(lambda_client, function_name: str) -> dict:
 
 def ensure_worker_canary(lambda_client, main_config: dict, code: bytes) -> None:
     try:
-        current = ensure_architecture(lambda_client, WORKER_FUNCTION)
+        current = lambda_client.get_function_configuration(FunctionName=WORKER_FUNCTION)
         update_code(lambda_client, WORKER_FUNCTION, code)
         merged_environment = dict(
             current.get("Environment", {}).get("Variables", {})
@@ -106,6 +96,9 @@ def ensure_worker_canary(lambda_client, main_config: dict, code: bytes) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--canary-only", action="store_true")
+    args = parser.parse_args()
     region = os.environ["AWS_REGION"]
     function_name = os.getenv("LAMBDA_FUNCTION_NAME", "ToEnWikipediaBot")
     package = Path(os.getenv("BOT_ZIP_PATH", "package-arm64.zip"))
@@ -120,7 +113,10 @@ def main() -> None:
     # real Lambda invocation before the public webhook function is migrated.
     ensure_worker_canary(lambda_client, main_config, code)
 
-    ensure_architecture(lambda_client, function_name)
+    if args.canary_only:
+        print("Exact ARM64 package passed the worker canary; main Lambda is unchanged.")
+        return
+
     update_code(lambda_client, function_name, code)
     health = invoke_health(lambda_client, function_name)
 

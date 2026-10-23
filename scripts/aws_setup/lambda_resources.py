@@ -9,6 +9,19 @@ from aws_setup.common import APPLICATION, MONITOR_FUNCTION, WORKER_FUNCTION
 LAMBDA_ARCHITECTURE = "arm64"
 
 
+def prepare_function_url(lambda_client, function_name: str) -> str:
+    """Obtain the URL without opening public access before secure code is ready."""
+    try:
+        response = lambda_client.get_function_url_config(FunctionName=function_name)
+    except ClientError as error:
+        if error.response["Error"]["Code"] != "ResourceNotFoundException":
+            raise
+        response = lambda_client.create_function_url_config(
+            FunctionName=function_name, AuthType="AWS_IAM", InvokeMode="BUFFERED",
+        )
+    return response["FunctionUrl"]
+
+
 def ensure_function_url(lambda_client, function_name: str) -> str:
     try:
         response = lambda_client.get_function_url_config(FunctionName=function_name)
@@ -81,27 +94,12 @@ def disable_legacy_api_gateway_invocation(lambda_client, function_name: str) -> 
                 raise
 
 
-def _ensure_function_architecture(lambda_client, function_name: str) -> dict:
-    current = lambda_client.get_function_configuration(FunctionName=function_name)
-    architectures = current.get("Architectures") or ["x86_64"]
-    if architectures != [LAMBDA_ARCHITECTURE]:
-        lambda_client.update_function_configuration(
-            FunctionName=function_name,
-            Architectures=[LAMBDA_ARCHITECTURE],
-        )
-        lambda_client.get_waiter("function_updated_v2").wait(
-            FunctionName=function_name
-        )
-        current = lambda_client.get_function_configuration(FunctionName=function_name)
-    return current
-
-
 def update_main_function(
     lambda_client,
     function_name: str,
     environment: dict[str, str],
 ) -> dict:
-    current = _ensure_function_architecture(lambda_client, function_name)
+    current = lambda_client.get_function_configuration(FunctionName=function_name)
     merged = dict(current.get("Environment", {}).get("Variables", {}))
     merged.update({key: value for key, value in environment.items() if value != ""})
     lambda_client.update_function_configuration(
@@ -128,11 +126,12 @@ def ensure_worker_function(
 ) -> str:
     code = bot_zip.read_bytes()
     try:
-        current = _ensure_function_architecture(lambda_client, WORKER_FUNCTION)
+        current = lambda_client.get_function_configuration(FunctionName=WORKER_FUNCTION)
         lambda_client.update_function_code(
             FunctionName=WORKER_FUNCTION,
             ZipFile=code,
             Publish=False,
+            Architectures=[LAMBDA_ARCHITECTURE],
         )
         lambda_client.get_waiter("function_updated_v2").wait(FunctionName=WORKER_FUNCTION)
         merged = dict(current.get("Environment", {}).get("Variables", {}))
@@ -182,11 +181,12 @@ def ensure_monitor_function(
 ) -> str:
     code = monitor_zip.read_bytes()
     try:
-        current = _ensure_function_architecture(lambda_client, MONITOR_FUNCTION)
+        current = lambda_client.get_function_configuration(FunctionName=MONITOR_FUNCTION)
         lambda_client.update_function_code(
             FunctionName=MONITOR_FUNCTION,
             ZipFile=code,
             Publish=False,
+            Architectures=[LAMBDA_ARCHITECTURE],
         )
         lambda_client.get_waiter("function_updated_v2").wait(FunctionName=MONITOR_FUNCTION)
         merged = dict(current.get("Environment", {}).get("Variables", {}))

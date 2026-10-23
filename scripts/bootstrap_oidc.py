@@ -6,8 +6,6 @@ import boto3
 from botocore.exceptions import ClientError
 
 REPOSITORY = "mariomarcolongo/english-wikipedia-link-converter-telegram-bot"
-OWNER_ID = "84038748"
-REPOSITORY_ID = "782735600"
 ROLE_NAME = "GitHubActions-ToEnWikipediaBot"
 OIDC_URL = "https://token.actions.githubusercontent.com"
 OIDC_HOST = "token.actions.githubusercontent.com"
@@ -58,11 +56,9 @@ def ensure_provider(iam, account_id: str) -> str:
 
 
 def trust_policy(provider_arn: str) -> dict:
-    traditional = f"repo:{REPOSITORY}:ref:refs/heads/main"
-    immutable = (
-        f"repo:mariomarcolongo@{OWNER_ID}/english-wikipedia-link-converter-telegram-bot@"
-        f"{REPOSITORY_ID}:ref:refs/heads/main"
-    )
+    # Jobs using an environment receive an environment subject, not a branch
+    # subject. Restrict the production environment to main in GitHub settings.
+    subject = f"repo:{REPOSITORY}:environment:production"
     return {
         "Version": "2012-10-17",
         "Statement": [
@@ -73,9 +69,7 @@ def trust_policy(provider_arn: str) -> dict:
                 "Condition": {
                     "StringEquals": {
                         f"{OIDC_HOST}:aud": "sts.amazonaws.com",
-                    },
-                    "StringLike": {
-                        f"{OIDC_HOST}:sub": [traditional, immutable],
+                        f"{OIDC_HOST}:sub": subject,
                     },
                 },
             }
@@ -109,11 +103,13 @@ def deployment_policy(account_id: str, region: str, execution_role_arn: str) -> 
                     "lambda:UpdateFunctionConfiguration",
                     "lambda:PutFunctionConcurrency",
                     "lambda:GetFunctionConcurrency",
+                    "lambda:DeleteFunctionConcurrency",
                     "lambda:CreateFunction",
                     "lambda:TagResource",
                     "lambda:GetFunctionUrlConfig",
                     "lambda:CreateFunctionUrlConfig",
                     "lambda:UpdateFunctionUrlConfig",
+                    "lambda:DeleteFunctionUrlConfig",
                     "lambda:AddPermission",
                     "lambda:RemovePermission",
                     "lambda:GetPolicy",
