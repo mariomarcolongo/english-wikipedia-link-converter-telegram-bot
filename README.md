@@ -78,7 +78,6 @@ Required existing GitHub secrets:
 
 - `AWS_REGION` — currently `eu-north-1`;
 - `LAMBDA_FUNCTION_NAME` — currently `ToEnWikipediaBot`;
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` — required only for the first OIDC bootstrap;
 - the Telegram bot token remains in the Lambda environment as `TELEGRAM_BOT_TOKEN` or the legacy `YOUR_TELEGRAM_BOT_TOKEN`.
 
 Optional GitHub secrets:
@@ -95,11 +94,13 @@ Optional GitHub repository variable:
 
 ### One-time AWS OIDC bootstrap
 
-The long-lived IAM user only needs permission to create the repository-scoped GitHub OIDC provider and role. Using an AWS administrator session, attach the repository file `aws/github-deployer-oidc-bootstrap-policy.json` as an inline policy on the `GitHub_Deployer` user, then re-run the workflow.
+Production deployments use only short-lived GitHub OIDC credentials. The workflow does not read static AWS access-key secrets or fall back to an IAM user.
 
-The workflow stops before changing Lambda when this bootstrap permission is missing. On the first successful deployment it creates a role restricted to this repository's immutable owner/repository IDs and its `production` environment. The repository's OIDC settings have `use_immutable_subject=true`; AWS trust must include those IDs. Configure that environment in GitHub to allow deployments from the `main` branch only. The job also rejects stale commits and serializes production deployments without cancelling an active rollout. OIDC token permission is limited to the deploy job.
+For a new AWS account, an administrator first runs `scripts/bootstrap_oidc_v2.py` with temporary AWS administrator credentials, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME` set. This requires an existing bot Lambda so the script can scope deployment permissions to its execution role. The legacy JSON bootstrap policy in `aws/` is available for a temporary, administrator-controlled IAM-user migration; remove that inline policy after setup.
 
-After OIDC deployment succeeds, remove the temporary inline bootstrap policy from `GitHub_Deployer` and delete the long-lived `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` GitHub secrets. Future merges to `main` deploy automatically using short-lived credentials. The normal OIDC path does not require either long-lived secret.
+The deployment role is restricted to this repository's immutable owner/repository IDs and its `production` environment. The repository's OIDC settings have `use_immutable_subject=true`; AWS trust includes those IDs. Configure that GitHub environment to allow deployments from the `main` branch only. The job rejects stale commits and serializes production deployments without cancelling an active rollout. OIDC token permission is limited to the deploy job, with bounded retries for temporary authentication failures. Diagnostic output includes public identity claims, never the token itself.
+
+After migrating an old installation, remove the temporary bootstrap policy and the repository's obsolete `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets. Subsequent merges to `main` deploy automatically without either key.
 
 The deployment automatically:
 
