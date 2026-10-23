@@ -106,9 +106,7 @@ jobs:
       - name: Report OIDC identity claims without exposing tokens
         run: python scripts/inspect_oidc.py
 
-      - name: Try short-lived AWS credentials through GitHub OIDC
-        id: oidc
-        continue-on-error: true
+      - name: Configure short-lived AWS deployment credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
@@ -116,48 +114,9 @@ jobs:
           role-session-name: ToEnWikipediaBotDeploy
           mask-aws-account-id: true
           unset-current-credentials: true
-          retry-max-attempts: 3
-
-      - name: Use existing AWS deployment credentials when OIDC is unavailable
-        if: steps.oidc.outcome == 'failure'
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          mask-aws-account-id: true
-          unset-current-credentials: true
-
-      - name: Attempt GitHub OIDC bootstrap
-        id: bootstrap
-        if: steps.oidc.outcome == 'failure'
-        continue-on-error: true
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-        run: |
-          python -m pip install --upgrade boto3
-          python scripts/bootstrap_oidc_v2.py
-
-      - name: Stop safely when bootstrap permissions are missing
-        if: steps.oidc.outcome == 'failure' && steps.bootstrap.outcome == 'failure'
-        run: |
-          echo "::error title=One-time AWS IAM bootstrap required::No production resource was changed. Attach aws/github-deployer-oidc-bootstrap-policy.json to the GitHub_Deployer IAM user with an administrator session, then re-run this workflow."
-          exit 1
-
-      - name: Switch to short-lived OIDC credentials when bootstrap succeeds
-        if: steps.oidc.outcome == 'failure' && steps.bootstrap.outcome == 'success'
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: ToEnWikipediaBotDeploy
-          mask-aws-account-id: true
-          unset-current-credentials: true
-          retry-max-attempts: 5
+          retry-max-attempts: 10
 
       - name: Refresh repository-scoped OIDC policy
-        if: steps.oidc.outcome == 'success' || steps.bootstrap.outcome == 'success'
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}

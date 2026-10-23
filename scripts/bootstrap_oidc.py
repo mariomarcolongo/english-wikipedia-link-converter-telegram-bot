@@ -237,12 +237,15 @@ def deployment_policy(account_id: str, region: str, execution_role_arn: str) -> 
             {
                 "Sid": "BudgetMonitoring",
                 "Effect": "Allow",
-                "Action": [
-                    "budgets:DescribeBudget",
-                    "budgets:DescribeBudgets",
-                    "budgets:CreateBudget",
-                ],
+                # Budgets IAM actions differ from its Describe/Create API names.
+                "Action": ["budgets:ViewBudget"],
                 "Resource": "*",
+            },
+            {
+                "Sid": "BotBudgetManagement",
+                "Effect": "Allow",
+                "Action": "budgets:ModifyBudget",
+                "Resource": f"arn:aws:budgets::{account_id}:budget/ToEnWikipediaBot-monthly-*USD",
             },
         ],
     }

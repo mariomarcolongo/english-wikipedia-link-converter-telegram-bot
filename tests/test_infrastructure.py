@@ -43,9 +43,12 @@ class DeploymentPolicyTests(unittest.TestCase):
             statements["MonitoringConfiguration"]["Action"],
         )
         self.assertIn(
-            "budgets:DescribeBudgets",
+            "budgets:ViewBudget",
             statements["BudgetMonitoring"]["Action"],
         )
+        self.assertEqual(statements["BotBudgetManagement"]["Action"], "budgets:ModifyBudget")
+        self.assertEqual(statements["BotBudgetManagement"]["Resource"],
+                         "arn:aws:budgets::123456789012:budget/ToEnWikipediaBot-monthly-*USD")
 
 
 class ArchitectureTests(unittest.TestCase):
