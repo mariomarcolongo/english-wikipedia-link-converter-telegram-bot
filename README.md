@@ -97,7 +97,7 @@ Optional GitHub repository variable:
 
 The long-lived IAM user only needs permission to create the repository-scoped GitHub OIDC provider and role. Using an AWS administrator session, attach the repository file `aws/github-deployer-oidc-bootstrap-policy.json` as an inline policy on the `GitHub_Deployer` user, then re-run the workflow.
 
-The workflow stops before changing Lambda when this bootstrap permission is missing. On the first successful deployment it creates a role restricted to this repository's `production` environment. Configure that environment in GitHub to allow deployments from the `main` branch only. The job also rejects stale commits and serializes production deployments without cancelling an active rollout. OIDC token permission is limited to the deploy job.
+The workflow stops before changing Lambda when this bootstrap permission is missing. On the first successful deployment it creates a role restricted to this repository's immutable owner/repository IDs and its `production` environment. The repository's OIDC settings have `use_immutable_subject=true`; AWS trust must include those IDs. Configure that environment in GitHub to allow deployments from the `main` branch only. The job also rejects stale commits and serializes production deployments without cancelling an active rollout. OIDC token permission is limited to the deploy job.
 
 After OIDC deployment succeeds, remove the temporary inline bootstrap policy from `GitHub_Deployer` and delete the long-lived `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` GitHub secrets. Future merges to `main` deploy automatically using short-lived credentials. The normal OIDC path does not require either long-lived secret.
 

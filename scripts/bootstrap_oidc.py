@@ -6,6 +6,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 REPOSITORY = "mariomarcolongo/english-wikipedia-link-converter-telegram-bot"
+OWNER_ID = "84038748"
+REPOSITORY_ID = "782735600"
 ROLE_NAME = "GitHubActions-ToEnWikipediaBot"
 OIDC_URL = "https://token.actions.githubusercontent.com"
 OIDC_HOST = "token.actions.githubusercontent.com"
@@ -56,9 +58,13 @@ def ensure_provider(iam, account_id: str) -> str:
 
 
 def trust_policy(provider_arn: str) -> dict:
-    # Jobs using an environment receive an environment subject, not a branch
-    # subject. Restrict the production environment to main in GitHub settings.
-    subject = f"repo:{REPOSITORY}:environment:production"
+    # Live repository OIDC settings enable immutable subjects. Environment jobs
+    # use the production suffix; GitHub restricts that environment to main.
+    owner, repository = REPOSITORY.split("/", 1)
+    subject = (
+        f"repo:{owner}@{OWNER_ID}/{repository}@{REPOSITORY_ID}"
+        ":environment:production"
+    )
     return {
         "Version": "2012-10-17",
         "Statement": [

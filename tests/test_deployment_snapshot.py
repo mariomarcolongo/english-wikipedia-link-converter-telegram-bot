@@ -29,7 +29,7 @@ class DeploymentTrustTests(unittest.TestCase):
             conditions = statement["Condition"]["StringEquals"]
             self.assertEqual(conditions["token.actions.githubusercontent.com:aud"], "sts.amazonaws.com")
             self.assertEqual(conditions["token.actions.githubusercontent.com:sub"],
-                             f"repo:{bootstrap_oidc.REPOSITORY}:environment:production")
+                             "repo:mariomarcolongo@84038748/english-wikipedia-link-converter-telegram-bot@782735600:environment:production")
             self.assertNotIn("*", conditions["token.actions.githubusercontent.com:sub"])
 
     def test_package_and_architecture_are_uploaded_in_one_request(self):
