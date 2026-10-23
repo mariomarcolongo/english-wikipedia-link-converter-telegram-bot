@@ -11,8 +11,8 @@ The `/privacy` command links to the full Italian policy at [`PRIVACY_POLICY.it.m
 | Conversion found | Trovata una pagina di Wikipedia in inglese per |
 | Conversion not found | Nessuna pagina di Wikipedia in inglese trovata per |
 | Delayed conversion | Elaborato in ritardo mentre il bot si riprendeva da un'interruzione del servizio. |
-| Skipped stale private request | Il bot non era temporaneamente disponibile. Questa richiesta meno recente è stata ignorata per evitare messaggi in ritardo; se ti serve ancora, invia di nuovo il link a Wikipedia. |
-| Skipped stale group conversions | Il bot non era temporaneamente disponibile. Le conversioni meno recenti sono state ignorate per non riempire la chat; invia di nuovo i link che ti servono ancora. |
+| Skipped stale private request | Il servizio del bot ha subito un'interruzione temporanea. Questa richiesta meno recente è stata ignorata per evitare messaggi in ritardo; se ti serve ancora, invia di nuovo il link a Wikipedia. |
+| Skipped stale group conversions | Il servizio del bot ha subito un'interruzione temporanea. Le conversioni meno recenti sono state ignorate per non riempire la chat; invia di nuovo i link che ti servono ancora. |
 | Rate limit | Troppe richieste di conversione. Attendi circa un minuto e riprova. |
 | Inline result title, one link | Pagina di Wikipedia in inglese trovata |
 | Inline result title, multiple links | Elaborati {count} link di Wikipedia in inglese |
@@ -27,7 +27,7 @@ The `/privacy` command links to the full Italian policy at [`PRIVACY_POLICY.it.m
 | License text | Il codice in questo repository è distribuito con la licenza GNU Affero General Public License v3.0 (AGPL-3.0), salvo diversa indicazione. |
 | Icon license text | L'icona del bot Telegram English Wikipedia Link Converter è distribuita con licenza Creative Commons Attribuzione-Condividi allo stesso modo 4.0 Internazionale (CC BY-SA 4.0). Consulta la directory dell'icona per maggiori dettagli. |
 | Image credits heading and introduction | Crediti delle immagini — L'icona del bot include immagini provenienti dalle seguenti fonti: |
-| Wikipedia logo credit | Logo di Wikipedia — Versione 2 di utente scomparso 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0); è disponibile qui su Wikimedia Commons. |
+| Wikipedia logo credit | Logo di Wikipedia — Versione 2 di Vanished user 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0); è disponibile qui su Wikimedia Commons. |
 | Left arrow credit | Freccia a sinistra — di Icons8, distribuita con licenza CC0 e disponibile qui su Wikimedia Commons. |
 | Healthy status | ✅ Operativo |
 | Unhealthy status | ⚠️ Rilevata un'interruzione del servizio |
@@ -68,7 +68,7 @@ This is the complete Italian text shown by `/license` (the linked phrases point 
 >
 > L'icona del bot include immagini provenienti dalle seguenti fonti:
 >
-> - **Logo di Wikipedia**, versione 2 di utente scomparso 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0); è disponibile qui su Wikimedia Commons.
+> - **Logo di Wikipedia**, versione 2 di Vanished user 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0); è disponibile qui su Wikimedia Commons.
 > - **Freccia a sinistra**, di Icons8, distribuita con licenza CC0 e disponibile qui su Wikimedia Commons.
 
 ## Telegram command menu
@@ -86,4 +86,4 @@ The Italian command menu uses the same command names as the English menu:
 
 ## Privacy policy
 
-The full Italian privacy policy is maintained in [`PRIVACY_POLICY.it.md`](PRIVACY_POLICY.it.md). It is the localized text returned by the `/privacy` command.
+The full Italian privacy policy is maintained in [`PRIVACY_POLICY.it.md`](PRIVACY_POLICY.it.md). It is the localized text returned by the `/privacy` command. The command preserves the English policy URL for English users and selects the `.it.html` page for Italian users. GitHub Pages publishes the repository's `docs` directory, so the Italian Markdown file is published as `PRIVACY_POLICY.it.html` after the branch is merged and Pages rebuilds.
