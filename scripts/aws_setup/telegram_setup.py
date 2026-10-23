@@ -24,6 +24,7 @@ def configure_webhook(token: str, function_url: str, secret_token: str) -> dict:
                 {"command": "source", "description": "View the source code"},
                 {"command": "license", "description": "View licenses and image credits"},
                 {"command": "privacy", "description": "View the privacy policy"},
+                {"command": "language", "description": "Set or view your language preference"},
             ]
         },
     )
@@ -39,6 +40,7 @@ def configure_webhook(token: str, function_url: str, secret_token: str) -> dict:
                 {"command": "source", "description": "Visualizza il codice sorgente"},
                 {"command": "license", "description": "Visualizza licenze e crediti delle immagini"},
                 {"command": "privacy", "description": "Visualizza l'informativa sulla privacy"},
+                {"command": "language", "description": "Imposta o visualizza la preferenza della lingua"},
             ],
         },
     )

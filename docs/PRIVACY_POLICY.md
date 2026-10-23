@@ -10,6 +10,7 @@ This policy supplements Telegram's [Standard Bot Privacy Policy](https://telegra
 
 - **Telegram update data:** Telegram sends the Bot the message or inline query needed to provide the requested feature. For link conversion, this can include the submitted Wikipedia URL and its article title. The Bot does not keep a chat history.
 - **Operational identifiers and counters:** The Bot uses Telegram user, chat, and update identifiers to apply rate limits, prevent duplicate processing, and manage recovery notices. These records are stored in DynamoDB and expire automatically. The table does not store message text.
+- **Language preference:** If you choose English or Italian with `/language en` or `/language it`, the Bot stores your Telegram user ID and choice in DynamoDB with an expiry set one year after it was last set. Automatic expiry may take additional time to remove the record. `/language auto` deletes the saved preference and returns to automatic selection based on your Telegram language.
 - **Temporary processing data:** Updates accepted for conversion may be held in Amazon SQS while they await processing or retry. Repeatedly failing updates may enter a dead-letter queue for operational troubleshooting.
 - **Logs:** The Bot logs warnings and errors for operations. It is designed not to log message text, user names, bot tokens, or webhook secrets.
 

@@ -45,6 +45,15 @@ The `/privacy` command links to the full Italian policy at [`PRIVACY_POLICY.it.m
 | `/source` description | Mostra il link al codice sorgente del bot |
 | `/license` description | Mostra le licenze e i crediti delle immagini |
 | `/privacy` description | Mostra l'informativa sulla privacy del bot |
+| `/language` description | Imposta o visualizza la preferenza della lingua |
+| Current language prompt | Preferenza della lingua: {language}. |
+| Language choices prompt | Scegli /language auto, /language en oppure /language it. |
+| Automatic option name | Automatica (lingua di Telegram) |
+| English option name | Inglese |
+| Italian option name | Italiano |
+| Language change confirmation | Lingua impostata su {language}. |
+| Automatic language confirmation | Lingua impostata su automatica. Userò la lingua di Telegram quando disponibile; altrimenti userò l'inglese. |
+| Preference save error | Non riesco a salvare la preferenza della lingua. Riprova più tardi. |
 | Usage heading | Come usarmi: |
 | Send-link instruction | Inviami un link a una pagina Wikipedia in un'altra lingua. |
 | Group instruction | Aggiungimi a un gruppo per convertire i link condivisi dai partecipanti. |
@@ -83,7 +92,8 @@ The Italian command menu uses the same command names as the English menu:
 | `/source` | Visualizza il codice sorgente |
 | `/license` | Visualizza licenze e crediti delle immagini |
 | `/privacy` | Visualizza l'informativa sulla privacy |
+| `/language` | Imposta o visualizza la preferenza della lingua |
 
 ## Privacy policy
 
-The full Italian privacy policy is maintained in [`PRIVACY_POLICY.it.md`](PRIVACY_POLICY.it.md). It is the localized text returned by the `/privacy` command. The command preserves the English policy URL for English users and selects the `.it.html` page for Italian users. GitHub Pages publishes the repository's `docs` directory, so the Italian Markdown file is published as `PRIVACY_POLICY.it.html` after the branch is merged and Pages rebuilds.
+The `/language` command accepts `/language en`, `/language it`, and `/language auto`. Choices are stored per Telegram user in DynamoDB and expire one year after being set. `auto` removes the saved choice. The full Italian privacy policy is maintained in [`PRIVACY_POLICY.it.md`](PRIVACY_POLICY.it.md). The `/privacy` command preserves the English policy URL for English users and selects the `.it.html` page for Italian users. GitHub Pages publishes the repository's `docs` directory, so the Italian Markdown file is published as `PRIVACY_POLICY.it.html` after the branch is merged and Pages rebuilds.
