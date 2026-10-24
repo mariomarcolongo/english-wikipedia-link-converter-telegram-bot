@@ -115,6 +115,7 @@ TEXT = {
         "healthy": "✅ Operational",
         "unhealthy": "⚠️ Service disruption detected",
         "unknown_status": "❔ Status not available yet",
+        "second_ago": "{count} second ago",
         "seconds_ago": "{count} seconds ago",
         "unknown": "unknown",
         "status": "Status:",
@@ -186,6 +187,7 @@ TEXT = {
         "healthy": "✅ Operativo",
         "unhealthy": "⚠️ Rilevata un'interruzione del servizio",
         "unknown_status": "❔ Stato non ancora disponibile",
+        "second_ago": "{count} secondo fa",
         "seconds_ago": "{count} secondi fa",
         "unknown": "sconosciuto",
         "status": "Stato:",
@@ -912,13 +914,13 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     state = await asyncio.to_thread(_read_monitor_state)
     status = state.get("status", "unknown")
     checked_at = int(state.get("checked_at", "0") or 0)
-    pending = state.get("pending_updates", "unknown")
-    queue_depth = state.get("queue_depth", "unknown")
-    version = os.getenv("DEPLOYMENT_VERSION", "unknown")[:12]
     status_url = os.getenv("STATUS_CHANNEL_URL", "")
 
     language = await _language(update)
     labels = TEXT[language]
+    pending = state.get("pending_updates", labels["unknown"])
+    queue_depth = state.get("queue_depth", labels["unknown"])
+    version = os.getenv("DEPLOYMENT_VERSION", "")[:12] or labels["unknown"]
     if status == "healthy":
         headline = labels["healthy"]
     elif status == "unhealthy":
@@ -928,7 +930,8 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     age_text = labels["unknown"]
     if checked_at:
-        age_text = labels["seconds_ago"].format(count=max(0, int(time.time()) - checked_at))
+        age = max(0, int(time.time()) - checked_at)
+        age_text = labels["second_ago" if age == 1 else "seconds_ago"].format(count=age)
 
     text = (
         f"<b>{labels['status']}</b> {headline}\n"
