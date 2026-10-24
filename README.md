@@ -2,6 +2,10 @@
 
 Telegram bot that converts any non-English Wikipedia article URL into its English equivalent: https://t.me/ToEnWikipediaBot.
 
+## Localization
+
+The bot supports English and Italian. Use the [localization glossary](docs/LOCALIZATION_GLOSSARY.md) for consistent terminology and writing conventions, and the [Italian localization inventory](docs/ITALIAN_LOCALIZATION.md) for the translated messages and command descriptions.
+
 ## Reliability and security architecture
 
 ```text

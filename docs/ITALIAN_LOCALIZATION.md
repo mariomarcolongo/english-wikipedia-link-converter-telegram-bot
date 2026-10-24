@@ -1,6 +1,8 @@
 # Italian localization
 
-The bot selects Italian when Telegram reports an `it` language code (including regional variants such as `it-IT`). All other or missing language codes use English. Command names and links remain unchanged.
+For preferred English–Italian terminology, writing conventions, and content to preserve, see the [localization glossary](LOCALIZATION_GLOSSARY.md).
+
+The bot uses a saved `/language en` or `/language it` preference when present. In automatic mode, it selects Italian when Telegram reports an `it` language code (including regional variants such as `it-IT`). All other or missing language codes use English. Command names and arguments remain unchanged; the privacy-policy link selects the matching language.
 
 The `/privacy` command links to the full Italian policy at [`PRIVACY_POLICY.it.md`](PRIVACY_POLICY.it.md), which is published alongside the English policy. The English and Italian policy texts were aligned with the current queue, operational-state, and log-retention design.
 
@@ -25,14 +27,15 @@ The `/privacy` command links to the full Italian policy at [`PRIVACY_POLICY.it.m
 | Source reply | Puoi trovare qui il codice sorgente:\n{url}\n\nContribuisci liberamente o crea una tua versione con un fork! |
 | License heading | Licenza |
 | License text | Il codice in questo repository è distribuito con la licenza GNU Affero General Public License v3.0 (AGPL-3.0), salvo diversa indicazione. |
-| Icon license text | L'icona del bot Telegram English Wikipedia Link Converter è distribuita con licenza Creative Commons Attribuzione-Condividi allo stesso modo 4.0 Internazionale (CC BY-SA 4.0). Consulta la directory dell'icona per maggiori dettagli. |
+| Icon license text | L'icona del bot Telegram English Wikipedia Link Converter è distribuita con la licenza Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0). Consulta la directory dell'icona per maggiori dettagli. |
 | Image credits heading and introduction | Crediti delle immagini — L'icona del bot include immagini provenienti dalle seguenti fonti: |
 | Wikipedia logo credit | Logo di Wikipedia — Versione 2 di Vanished user 24kwjf10h32h, versione 1 di Nohat (ideata da Paullusmagnus); Wikimedia, utilizzata con licenza Creative Commons Attribuzione-Condividi allo stesso modo 3.0 non adattata (CC BY-SA 3.0); è disponibile qui su Wikimedia Commons. |
 | Left arrow credit | Freccia a sinistra — di Icons8, distribuita con licenza CC0 e disponibile qui su Wikimedia Commons. |
 | Healthy status | ✅ Operativo |
 | Unhealthy status | ⚠️ Rilevata un'interruzione del servizio |
 | Unknown status | ❔ Stato non ancora disponibile |
-| Time since check | {count} secondi fa |
+| Time since check, one second | {count} secondo fa |
+| Time since check, zero or multiple seconds | {count} secondi fa |
 | Unknown value | sconosciuto |
 | Status labels | Stato: · Ultimo controllo esterno: · Aggiornamenti Telegram in attesa: · Elementi in coda: · Versione: |
 | Status channel link | Aggiornamenti sullo stato del servizio |
